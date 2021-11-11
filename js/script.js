@@ -2,6 +2,9 @@
 const overview = document.querySelector(".overview");
 const username = "landerson1511";
 const repoList = document.querySelector(".repo-list");
+const reposContainer = document.querySelector(".repos");
+const repoData  = document.querySelector(".repo-data");
+
 
 
 
@@ -31,8 +34,8 @@ const gitDisplay = function (data) {
 };
 
 const gitRepoInfo  = async function () {
-    const repoInfo = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
-    const gitRepos = await repoInfo.json();
+    const fetchRepo = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+    const gitRepos = await fetchRepo.json();
     displayRepos(gitRepos);
 };
 
@@ -44,3 +47,40 @@ const displayRepos = function (repos) {
         repoList.append(repoItem);
     }
 };
+
+repoList.addEventListener("click", function (e) {
+if (e.target.matches("h3")) {
+    const repoName = e.target.innerText;
+    specificRepo(repoName);
+}
+});
+
+const specificRepo = async function (repoName) {
+    const fetchInfo = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await fetchInfo.json();
+    console.log(repoInfo);
+    const fetchLanguages = await fetch(`https://api.github.com/repos/landerson1511/github-repo-gallery/languages`);
+    const languageData = await fetchLanguages.json();
+
+
+    const languages = [];
+    for (const language in languageData) {
+        languages.push(language);
+    }
+
+    displayRepoInfo(repoInfo, languages);
+};
+
+const displayRepoInfo = function (repoInfo, languages) {
+    repoData.innerHTML = "";
+    const div = document.createElement("div");
+    div.innerHTML = `
+    <h3>Name: ${repoInfo.name}</h3>
+    <p>Description: ${repoInfo.description}</p>
+    <p>Default Branch: ${repoInfo.default_branch}</p>
+    <p>Languages: ${languages.join(", ")}</p>
+    <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
+    repoData.append(div);
+    reposContainer.classList.add("hide");
+    repoData.classList.remove("hide");
+}
